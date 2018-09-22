@@ -5,8 +5,12 @@ In order to compile the file in MacOS, libusb is necessary. To install it, in a 
 
 `brew install libusb`
 
-After that, to compile the file:
+After that, to compile the file in MacOs:
 
 `g++ -o Test main.cpp -I /usr/local/Cellar/libusb/1.0.22/include/ -I /usr/local/Cellar/libusb/1.0.22/lib/ -lusb-1.0`
+
+in Linux, just:
+
+`g++ -o Test main.cpp -lusb-1.0`
 
 Once compiled, to execute the file simply run the executable `./Test`.
