@@ -1,8 +1,16 @@
-
+/**
+ * Observation Class
+ * 
+ * The observation object is intended to store all the information related to a specific
+ * measurement made by the Hideki physical device. This is the basic object in the application
+ * 
+ * Josep Dols - 6/10/18
+ */
 using namespace std;
 
 class Observation 
 {
+    // Observation attributes
     protected:
         double timestamp;
         float temperature[];
@@ -12,6 +20,7 @@ class Observation
         int wind_dir[];
         float rainfall;
 
+    // Observation public methods
     public:
         double getTimestamp() {
             return timestamp;
