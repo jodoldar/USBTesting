@@ -6,81 +6,70 @@
  * 
  * Josep Dols - 6/10/18
  */
+
+#include "Observation.h";
+
 using namespace std;
 
-class Observation 
-{
-    // Observation attributes
-    protected:
-        double timestamp;
-        float temperature[];
-        float humidity[];
-        float pressure;
-        float wind_gust[];
-        int wind_dir[];
-        float rainfall;
+// Observation public methods implementation
+double Observation::getTimestamp() {
+    return timestamp;
+}
 
-    // Observation public methods
-    public:
-        double getTimestamp() {
-            return timestamp;
-        }
-
-        void setTimestamp(double newTimestamp) {
-            timestamp = newTimestamp;
-        }
+void Observation::setTimestamp(double newTimestamp) {
+    timestamp = newTimestamp;
+}
 
 
-        float getTemperature(int pos) {
-            return temperature[pos];
-        }
-        
-        void setTemperature(float newTemperature, int pos) {
-            temperature[pos] = newTemperature;
-        }
+float Observation::getTemperature(int pos) {
+    return temperature[pos];
+}
+
+void Observation::setTemperature(float newTemperature, int pos) {
+    temperature[pos] = newTemperature;
+}
 
 
-        float getHumidity(int pos) {
-            return humidity[pos];
-        }
+float Observation::getHumidity(int pos) {
+    return humidity[pos];
+}
 
-        void setHumidity(float newHumidity, int pos) {
-            humidity[pos] = newHumidity;
-        }
-
-
-        float getPressure() {
-            return pressure;
-        }
-
-        void setPressure(float newPressure) {
-            pressure = newPressure;
-        }
+void Observation::setHumidity(float newHumidity, int pos) {
+    humidity[pos] = newHumidity;
+}
 
 
-        float getWindGust(int pos) {
-            return wind_gust[pos];
-        }
+float Observation::getPressure() {
+    return pressure;
+}
 
-        void setWindGust(float newWindGust, int pos) {
-            wind_gust[pos] = newWindGust;
-        }
-
-
-        int getWindDir(int pos) {
-            return wind_dir[pos];
-        }
-
-        void setWindDir(int newWindDir, int pos) {
-            wind_dir[pos] = newWindDir;
-        }
+void Observation::setPressure(float newPressure) {
+    pressure = newPressure;
+}
 
 
-        float getRainfall() {
-            return rainfall;
-        }
+float Observation::getWindGust(int pos) {
+    return wind_gust[pos];
+}
 
-        void setRainfall(float newRainfall) {
-            rainfall = newRainfall;
-        }
-};
+void Observation::setWindGust(float newWindGust, int pos) {
+    wind_gust[pos] = newWindGust;
+}
+
+
+int Observation::getWindDir(int pos) {
+    return wind_dir[pos];
+}
+
+void Observation::setWindDir(int newWindDir, int pos) {
+    wind_dir[pos] = newWindDir;
+}
+
+
+float Observation::getRainfall() {
+    return rainfall;
+}
+
+void Observation::setRainfall(float newRainfall) {
+    rainfall = newRainfall;
+}
