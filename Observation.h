@@ -21,6 +21,9 @@ class Observation
 
     // Observation public methods
     public:
+		void Observation();
+		void Observation(double newTimestamp);
+		
         double getTimestamp();
         void setTimestamp(double newTimestamp);
         float getTemperature(int pos);
