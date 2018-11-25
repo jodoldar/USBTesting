@@ -11,6 +11,18 @@
 
 using namespace std;
 
+// Constructors for Observation class
+void Observation::Observation() {
+	timestamp = 0;
+	pressure = 1013;
+	rainfall = 0;
+}
+void Observation(double newTimestamp){
+	timestamp = newTimestamp;
+	pressure = 1013;
+	rainfall = 0;
+}
+
 // Observation public methods implementation
 double Observation::getTimestamp() {
     return timestamp;
