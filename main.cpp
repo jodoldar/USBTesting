@@ -4,142 +4,15 @@
 #include <cstring>
 #include <libusb-1.0/libusb.h>
 
+#include "main.h"
+
 using namespace std;
 
-const int BUFLEN = 35;
-
-void printdev(libusb_device *dev); // Function prototype
-int bcd2int(char bcd); // Function prototype
-
 int main() {
-    libusb_device **devs;
-    libusb_device_handle *dev_handle;
-    libusb_context *ctx;
-
-    int retValue;
-    int iInterface;
-    ssize_t counter;
-    unsigned char control_data[] = {0x05, 0x0AF, 0x00, 0x00, 0x00, 0x00, 0xAF, 0xFE};
-    unsigned char receive_buffer[BUFLEN];
-    int control_addr = 0x020001;
-    int transferred_len = 0;
-    int bytes_transferred = 0;
-    int total_transferred = 0;
-    unsigned char crc;
-    bool finish = false;
-
-    retValue = libusb_init(&ctx);
-    if (retValue < 0) {
-        cout << "Error initializing libusb" << endl;
-        return 1;
-    }
-
-    //libusb_set_debug(ctx, 3); Deprecated
-
-    counter = libusb_get_device_list(ctx, &devs);
-    if (counter < 0) {
-        cout << "Error listing the devices" << endl;
-        return 2;
-    }
-    cout << "There are " << counter << " devices in the list" << endl;
-
-    /*for (int i = 0; i < counter; i++) {
-        printdev(devs[i]);
-    }*/
-
-    dev_handle = libusb_open_device_with_vid_pid(ctx, 4400, 26625);
-    if (dev_handle == NULL) {
-        cout << "Cannot open device" << endl;
-    } else {
-        cout << "Device opened" << endl;
-    }
-
-    libusb_free_device_list(devs, 1);
-
-    retValue = libusb_set_auto_detach_kernel_driver(dev_handle, 1);
-    if (retValue < 0) {
-        cout << " Error auto-setting the kernel detach: " << libusb_strerror(libusb_error(retValue)) << endl;
-        if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
-            cout << "Kernel Driver Active" << endl;
-            if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
-                cout << "Kernel Driver Detached" << endl;
-            } else {
-                cout << "Error detaching the Kernel Driver" << endl;
-            }
-        } else {
-            cout << "Kernel Driver not loaded" << endl;
-        }
-    }
     
-    iInterface = libusb_claim_interface(dev_handle, 0);
-    if (iInterface < 0) {
-        cout << "Cannot Claim Interface (" << libusb_strerror(libusb_error(iInterface)) << ")" << endl;
-        return 3;
-    }
-    cout << "Interface claimed" << endl;
+    unsigned char receive_buffer[BUFLEN];
 
-    retValue = libusb_set_interface_alt_setting(dev_handle, 0, 0);
-    if (retValue < 0) {
-        cout << "Alternative setting not configured: " << libusb_strerror(libusb_error(retValue)) << endl;
-    }
-    //do {
-
-    // Control transferece
-    control_data[4] = control_addr / 0x10000;
-    control_data[3] = ( control_addr - ( control_data[4] * 0x10000 ) ) / 0x100;
-    control_data[2] = control_addr - ( control_data[4] * 0x10000 ) - ( control_data[3] * 0x100 );
-    control_data[5] = ( control_data[1] ^ control_data[2] ^ control_data[3] ^ control_data[4] );
-
-    retValue = libusb_control_transfer(dev_handle, 0x21 & 0xff, 0x09 & 0xff, 0x0200 & 0xffff, 0x0000 & 0xffff, control_data, 0x08 & 0xffff, 50);
-    if (retValue < 0) {
-        cout << "Error sending request: " << libusb_strerror(libusb_error(retValue)) << endl;
-    } else {
-        std::this_thread::sleep_for(std::chrono::milliseconds(300)); // Wait for 30 ms
-        cout << "Message sent" << endl;
-    }
-
-    // Receive transference
-    retValue = libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
-    if (retValue < 0) {
-        //return -4;
-    }
-    while ( transferred_len > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(15)); // Wait for 0.15s
-        bytes_transferred = (int)(control_data[0]);
-        cout << "Control data 0: " << hex << (int)(control_data[0]) << dec << endl;
-        cout << "Data transferred: " << transferred_len << endl;
-        if (( total_transferred + bytes_transferred ) < BUFLEN )
-            memcpy (receive_buffer + total_transferred, control_data + 1, bytes_transferred);
-        total_transferred += bytes_transferred;
-        libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
-    }
-
-    cout << "Message received" << endl;
-
-    for (int i = 0; i < BUFLEN; i++) {
-        cout << "Char [" << i << "]: ";
-        cout << hex << static_cast<int>(receive_buffer[i]) << dec << endl;
-    }
-
-    crc = 0x00;
-    for (int i = 0; i <= 32; i++ ) {
-        crc = crc ^ receive_buffer[i];
-    }
-    finish = true;
-    if (crc != receive_buffer[33]){
-        finish = false;
-    } 
-    if (receive_buffer[0] != 0x5a) {
-        finish = false;
-    }
-
-    cout << "CRC: " << hex << (int)crc << dec << endl;
-    cout << "Rbuf[33]: " << hex << (int)receive_buffer[33] << dec << endl;
-    cout << "Rbuf[0]: " << hex << (int)receive_buffer[0] << dec << endl;
-    //} while (finish == false);
-
-    libusb_close(dev_handle);
-    libusb_exit(ctx);
+    obtain_usb_data((unsigned char*)&receive_buffer);
 
     //decode pressure
     cout << "[DEBUG] PRS BUF[20]=" << hex << static_cast<int>(receive_buffer[20]) << " BUF[21]=" << static_cast<int>(receive_buffer[21]) << dec << endl;
@@ -147,8 +20,8 @@ int main() {
         cout << "data->press = 0" << endl;
         cout << "data->_press = -1" << endl;
     } else {
-        cout << "data->press  = " << static_cast<int>(receive_buffer[21] * 0x100 + receive_buffer[20]) * 0.0625 << endl;
-        cout << "data->press = 0" << endl;
+        cout << "data->press = " << static_cast<int>(receive_buffer[21] * 0x100 + receive_buffer[20]) * 0.0625 << endl;
+        cout << "data->_press = 0" << endl;
     }
 
     //decode temperature and humidity from all sensors
@@ -156,7 +29,7 @@ int main() {
 		int offset = i * 3;
         int data_i = 0;
         float data_b = 0;
-        cout << "[DEBUG] TMP " << i << " BUF[" << 0 + offset << "]=" << receive_buffer[offset] << " BUF[" << 1 + offset << "]=" << receive_buffer[1 + offset] << " BUF[" << 2 + offset << "]=" << receive_buffer[2 + offset] << endl;
+        cout << "[DEBUG] TMP " << i << " BUF[" << 0 + offset << "]=" << hex << receive_buffer[offset] << " BUF[" << dec << 1 + offset << "]=" << hex << receive_buffer[1 + offset] << " BUF[" << dec << 2 + offset << "]=" << hex << receive_buffer[2 + offset] << endl;
 		if (bcd2int(receive_buffer[offset] & 0x0F) > 9) {
             cout << "[DEBUG] TMP buffer 0 & 0x0F > 9" << endl;
 			if (((receive_buffer[offset] & 0x0F) == 0x0C) || ((receive_buffer[offset] & 0x0F) == 0x0B)) {
@@ -198,6 +71,37 @@ int main() {
 		}
 	}
 
+    //decode windchill
+    int data_e = 0;
+    // Part 1: Error management
+    if ((bcd2int(receive_buffer[23] & 0xF0) > 90) || (bcd2int(receive_buffer[23] & 0x0F) > 9)) {
+		if ((receive_buffer[23] == 0xAA) && (receive_buffer[24] == 0x8A))
+			data_e = -1; //data->_wChill = -1;
+		else if ((receive_buffer[23] == 0xBB) && (receive_buffer[24] == 0x8B))
+			data_e = -2; //data->_wChill = -2;
+		else if ((receive_buffer[23] == 0xEE) && (receive_buffer[24] == 0x8E))
+			data_e = -3; //data->_wChill = -3;
+		else
+			data_e = -4; //data->_wChill = -4;
+	}
+	else
+		data_e = 0; //data->_wChill = 0;
+
+    // Part 2: Data Adquisition
+    float temp_wChill = 0.0;
+	if (((receive_buffer[24] & 0x40) != 0x40))
+		cout << "data->_wChill = " << -2 << endl;
+	if (data_e == 0) {
+        temp_wChill = (bcd2int(receive_buffer[23]) / 10.0) + (bcd2int(receive_buffer[24] & 0x0F) * 10.0);
+		if ((receive_buffer[24] & 0x20) == 0x20)
+			temp_wChill += 0.05;
+		if ((receive_buffer[24] & 0x80) != 0x80)
+			temp_wChill *= -1;
+
+        cout << "data->wChill = " << temp_wChill << endl;
+	}
+	else
+		cout << "data->wChill = " << 0 << endl;
     cout << "End of the program" << endl;
     return 0;
 }
@@ -247,4 +151,150 @@ void printdev (libusb_device *dev) {
 
 int bcd2int(char bcd) {
 	return ((int)((bcd & 0xF0) >> 4) * 10 + (int)(bcd & 0x0F));
+}
+
+short int obtain_usb_data(unsigned char* receive_buffer)
+{
+    libusb_device **devs;
+    libusb_device_handle *dev_handle;
+    libusb_context *ctx;
+
+    int retValue;
+    int iInterface;
+    ssize_t counter;
+    unsigned char control_data[] = {0x05, 0x0AF, 0x00, 0x00, 0x00, 0x00, 0xAF, 0xFE};
+    int control_addr = 0x020001;
+    int transferred_len = 0;
+    int bytes_transferred = 0;
+    int total_transferred = 0;
+    unsigned char crc;
+    bool finish = false;
+
+    retValue = libusb_init(&ctx);
+    if (retValue < 0) {
+        cerr << "Error initializing libusb" << endl;
+        return 1;
+    }
+
+    //libusb_set_debug(ctx, 3); Deprecated
+
+    counter = libusb_get_device_list(ctx, &devs);
+    if (counter < 0) {
+        cerr << "Error listing the devices" << endl;
+        return 2;
+    }
+    #ifdef DEBUG 
+        cout << "There are " << counter << " devices in the list" << endl;
+        for (int i = 0; i < counter; i++) {
+            printdev(devs[i]);
+        }
+    #endif
+
+    dev_handle = libusb_open_device_with_vid_pid(ctx, 4400, 26625);
+    if (dev_handle == NULL) {
+        cerr << "Cannot open device" << endl;
+    } else {
+        #ifdef DEBUG 
+            cout << "Device opened" << endl;
+        #endif
+    }
+
+    libusb_free_device_list(devs, 1);
+
+    retValue = libusb_set_auto_detach_kernel_driver(dev_handle, 1);
+    if (retValue < 0) {
+        cerr << " Error auto-setting the kernel detach: " << libusb_strerror(libusb_error(retValue)) << endl;
+        if (libusb_kernel_driver_active(dev_handle, 0) == 1) {
+            cerr << "Kernel Driver Active" << endl;
+            if (libusb_detach_kernel_driver(dev_handle, 0) == 0) {
+                cerr << "Kernel Driver Detached" << endl;
+            } else {
+                cerr << "Error detaching the Kernel Driver" << endl;
+            }
+        } else {
+            cerr << "Kernel Driver not loaded" << endl;
+        }
+    }
+    
+    iInterface = libusb_claim_interface(dev_handle, 0);
+    if (iInterface < 0) {
+        cerr << "Cannot Claim Interface (" << libusb_strerror(libusb_error(iInterface)) << ")" << endl;
+        return 3;
+    }
+    #ifdef DEBUG 
+        cout << "Interface claimed" << endl;
+    #endif
+
+    retValue = libusb_set_interface_alt_setting(dev_handle, 0, 0);
+    if (retValue < 0) {
+        cerr << "Alternative setting not configured: " << libusb_strerror(libusb_error(retValue)) << endl;
+    }
+
+    do {
+
+    // Control transferece
+    control_data[4] = control_addr / 0x10000;
+    control_data[3] = ( control_addr - ( control_data[4] * 0x10000 ) ) / 0x100;
+    control_data[2] = control_addr - ( control_data[4] * 0x10000 ) - ( control_data[3] * 0x100 );
+    control_data[5] = ( control_data[1] ^ control_data[2] ^ control_data[3] ^ control_data[4] );
+
+    retValue = libusb_control_transfer(dev_handle, 0x21 & 0xff, 0x09 & 0xff, 0x0200 & 0xffff, 0x0000 & 0xffff, control_data, 0x08 & 0xffff, 50);
+    if (retValue < 0) {
+        cerr << "Error sending request: " << libusb_strerror(libusb_error(retValue)) << endl;
+    } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(300)); // Wait for 30 ms
+        #ifdef DEBUG 
+            cout << "Message sent" << endl;
+        #endif
+    }
+
+    // Receive transference
+    retValue = libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
+    if (retValue < 0) {
+        //return -4;
+        cerr << "Error in the receive transfer." << endl;
+    }
+    while ( transferred_len > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(15)); // Wait for 0.15s
+        bytes_transferred = (int)(control_data[0]);
+        #ifdef DEBUG 
+        cout << "Control data 0: " << hex << (int)(control_data[0]) << dec << endl;
+        cout << "Data transferred: " << transferred_len << endl;
+        #endif
+        if (( total_transferred + bytes_transferred ) < BUFLEN )
+            memcpy (receive_buffer + total_transferred, control_data + 1, bytes_transferred);
+        total_transferred += bytes_transferred;
+        libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
+    }
+    #ifdef DEBUG 
+    cout << "Message received" << endl;
+
+    for (int i = 0; i < BUFLEN; i++) {
+        cout << "Char [" << i << "]: ";
+        cout << hex << static_cast<int>(receive_buffer[i]) << dec << endl;
+    }
+    #endif
+    // CRC Calculation
+    crc = 0x00;
+    for (int i = 0; i <= 32; i++ ) {
+        crc = crc ^ receive_buffer[i];
+    }
+
+    if (crc == receive_buffer[33]){
+        finish = true;
+    } 
+    if (crc == 0x5a) {
+        finish = true;
+    }
+
+    #ifdef DEBUG
+    cout << "CRC: " << hex << (int)crc << dec << endl;
+    cout << "Rbuf[33]: " << hex << (int)receive_buffer[33] << dec << endl;
+    cout << "Rbuf[0]: " << hex << (int)receive_buffer[0] << dec << endl;
+    #endif
+
+    } while (finish == false);
+
+    libusb_close(dev_handle);
+    libusb_exit(ctx);
 }
