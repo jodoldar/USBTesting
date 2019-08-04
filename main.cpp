@@ -4,72 +4,40 @@
 #include <cstring>
 #include <libusb-1.0/libusb.h>
 
+#include "data_decoder.h"
 #include "main.h"
+#include "Observation.h"
 
 using namespace std;
 
 int main() {
     
     unsigned char receive_buffer[BUFLEN];
+    Observation current_obs;
+    int aux_counter = 0;
+
+    current_obs = Observation();
 
     obtain_usb_data((unsigned char*)&receive_buffer);
 
     //decode pressure
-    cout << "[DEBUG] PRS BUF[20]=" << hex << static_cast<int>(receive_buffer[20]) << " BUF[21]=" << static_cast<int>(receive_buffer[21]) << dec << endl;
-    if (( receive_buffer[21] & 0xF0 ) == 0xF0 ) {
-        cout << "data->press = 0" << endl;
-        cout << "data->_press = -1" << endl;
-    } else {
-        cout << "data->press = " << static_cast<int>(receive_buffer[21] * 0x100 + receive_buffer[20]) * 0.0625 << endl;
-        cout << "data->_press = 0" << endl;
-    }
+    current_obs.setPressure(decode_pressure(receive_buffer));
+    cout << "Current PRESSURE is " << current_obs.getPressure() << endl;
 
     //decode temperature and humidity from all sensors
-	for (int i = 0; i <= 2; i++) {
-		int offset = i * 3;
-        int data_i = 0;
-        float data_b = 0;
-        cout << "[DEBUG] TMP " << i << " BUF[" << 0 + offset << "]=" << hex << receive_buffer[offset] << " BUF[" << dec << 1 + offset << "]=" << hex << receive_buffer[1 + offset] << " BUF[" << dec << 2 + offset << "]=" << hex << receive_buffer[2 + offset] << endl;
-		if (bcd2int(receive_buffer[offset] & 0x0F) > 9) {
-            cout << "[DEBUG] TMP buffer 0 & 0x0F > 9" << endl;
-			if (((receive_buffer[offset] & 0x0F) == 0x0C) || ((receive_buffer[offset] & 0x0F) == 0x0B)) {
-				cout << "[DEBUG] TMP buffer 0 & 0x0F = 0x0C or 0x0B" << endl;
-				cout << "data->_t[i] = -2" << endl;
-                data_i = -2;
-			} else {
-				cout << "data->_t[i] = -1" << endl;
-				cout << "[DEBUG] TMP other error in buffer 0" << endl;
-                data_i = -1;
-			}
-		}
-		if (((receive_buffer[1 + offset] & 0x40) != 0x40) && i > 0) {
-			cout << "[DEBUG] TMP buffer 1 bit 6 set" << endl;
-			cout << "data->_t[i] = -2" << endl;
-            data_i = -2;
-		}
-		if (data_i == 0) {
-			data_b = (bcd2int(receive_buffer[offset]) / 10.0) + (bcd2int(receive_buffer[1 + offset] & 0x0F) * 10.0);
-			cout << "[DEBUG] TMP " << i << " before is " << data_b << endl;
-			if ((receive_buffer[1 + offset] & 0x20) == 0x20)
-				data_b += 0.05;
-			if ((receive_buffer[1 + offset] & 0x80) != 0x80)
-				data_b *= -1;
-			cout << "[DEBUG] TMP " << i << " after is " << data_b << endl;
-		} else {
-			data_b = 0;
-        }
+    aux_counter = 0;
+	for (auto it : decode_temperature(receive_buffer))
+    {
+        current_obs.setTemperature(it, aux_counter++);
+        cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
+    }
 
-		if (data_i <= -2) {
-			cout << "data->_h[i] = -2" << endl;
-			cout << "data->h[i] = 0" << endl;
-		} else if (bcd2int(receive_buffer[2 + offset] & 0x0F) > 9) {
-			cout << "data->_h[i] = -3" << endl;
-			cout << "data->h[i] = 0" << endl;
-		} else {
-			cout << "data->h[i] = " << bcd2int(receive_buffer[2 + offset]) << endl;
-			cout << "data->_h[i] = 0" << endl;
-		}
-	}
+     aux_counter = 0;
+	for (auto it : decode_humidity(receive_buffer))
+    {
+        current_obs.setHumidity(it, aux_counter++);
+        cout << "Current HUMIDITY " << aux_counter-1 << " is " << current_obs.getHumidity(aux_counter-1) << endl;
+    }
 
     //decode windchill
     int data_e = 0;
@@ -149,9 +117,6 @@ void printdev (libusb_device *dev) {
     libusb_free_config_descriptor(config);
 }
 
-int bcd2int(char bcd) {
-	return ((int)((bcd & 0xF0) >> 4) * 10 + (int)(bcd & 0x0F));
-}
 
 short int obtain_usb_data(unsigned char* receive_buffer)
 {

@@ -7,8 +7,10 @@
  * Josep Dols - 6/10/18
  */
 
-#include "Observation.h";
+#include "Observation.h"
 #include <ctime>
+#include <iostream>
+#include <list>
 
 using namespace std;
 

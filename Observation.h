@@ -7,6 +7,8 @@
  * Josep Dols - 6/10/18
  */
 
+#include <list>
+
 class Observation 
 {
     // Observation attributes
@@ -29,8 +31,10 @@ class Observation
         void setTimestamp(unsigned int newTimestamp);
         float getTemperature(int pos);
         void setTemperature(float newTemperature, int pos);
+        void setTemperature(std::list<float> new_temps);
         float getHumidity(int pos);
         void setHumidity(float newHumidity, int pos);
+        void setHumidity(std::list<float> new_temps);
         float getPressure();
         void setPressure(float newPressure);
         float getWindGust(int pos);
