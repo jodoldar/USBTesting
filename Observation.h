@@ -11,21 +11,22 @@ class Observation
 {
     // Observation attributes
     protected:
-        double timestamp;
-        float temperature[];
-        float humidity[];
+        unsigned int timestamp;
+        float temperature[3];
+        float humidity[3];
         float pressure;
-        float wind_gust[];
-        int wind_dir[];
+        float wind_chill;
+        float wind_gust;
+        int wind_dir;
         float rainfall;
 
     // Observation public methods
     public:
-		void Observation();
-		void Observation(double newTimestamp);
+		Observation();
+		Observation(unsigned int newTimestamp);
 		
-        double getTimestamp();
-        void setTimestamp(double newTimestamp);
+        unsigned int getTimestamp();
+        void setTimestamp(unsigned int newTimestamp);
         float getTemperature(int pos);
         void setTemperature(float newTemperature, int pos);
         float getHumidity(int pos);

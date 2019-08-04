@@ -8,27 +8,41 @@
  */
 
 #include "Observation.h";
+#include <ctime>
 
 using namespace std;
 
 // Constructors for Observation class
-void Observation::Observation() {
-	timestamp = 0;
+Observation::Observation() {
+	timestamp = std::time(nullptr);
 	pressure = 1013;
 	rainfall = 0;
+
+    temperature[0] = 0.0; temperature[1] = 0.0; temperature[2] = 0.0;
+    humidity[0] = 0.0; humidity[1] = 0.0; humidity[2] = 0.0;
+    wind_chill = 0.0;
+    wind_gust = 0.0;
+    wind_dir = 0;
+
 }
-void Observation(double newTimestamp){
+Observation::Observation(unsigned int newTimestamp){
 	timestamp = newTimestamp;
 	pressure = 1013;
 	rainfall = 0;
+
+    temperature[0] = 0.0; temperature[1] = 0.0; temperature[2] = 0.0;
+    humidity[0] = 0.0; humidity[1] = 0.0; humidity[2] = 0.0;
+    wind_chill = 0.0;
+    wind_gust = 0.0;
+    wind_dir = 0;
 }
 
 // Observation public methods implementation
-double Observation::getTimestamp() {
+unsigned int Observation::getTimestamp() {
     return timestamp;
 }
 
-void Observation::setTimestamp(double newTimestamp) {
+void Observation::setTimestamp(unsigned int newTimestamp) {
     timestamp = newTimestamp;
 }
 
@@ -61,20 +75,20 @@ void Observation::setPressure(float newPressure) {
 
 
 float Observation::getWindGust(int pos) {
-    return wind_gust[pos];
+    return wind_gust;
 }
 
 void Observation::setWindGust(float newWindGust, int pos) {
-    wind_gust[pos] = newWindGust;
+    wind_gust = newWindGust;
 }
 
 
 int Observation::getWindDir(int pos) {
-    return wind_dir[pos];
+    return wind_dir;
 }
 
 void Observation::setWindDir(int newWindDir, int pos) {
-    wind_dir[pos] = newWindDir;
+    wind_dir = newWindDir;
 }
 
 
