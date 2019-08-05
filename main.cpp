@@ -32,7 +32,7 @@ int main() {
         cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
     }
 
-     aux_counter = 0;
+    aux_counter = 0;
 	for (auto it : decode_humidity(receive_buffer))
     {
         current_obs.setHumidity(it, aux_counter++);
@@ -40,36 +40,27 @@ int main() {
     }
 
     //decode windchill
-    int data_e = 0;
-    // Part 1: Error management
-    if ((bcd2int(receive_buffer[23] & 0xF0) > 90) || (bcd2int(receive_buffer[23] & 0x0F) > 9)) {
-		if ((receive_buffer[23] == 0xAA) && (receive_buffer[24] == 0x8A))
-			data_e = -1; //data->_wChill = -1;
-		else if ((receive_buffer[23] == 0xBB) && (receive_buffer[24] == 0x8B))
-			data_e = -2; //data->_wChill = -2;
-		else if ((receive_buffer[23] == 0xEE) && (receive_buffer[24] == 0x8E))
-			data_e = -3; //data->_wChill = -3;
-		else
-			data_e = -4; //data->_wChill = -4;
-	}
-	else
-		data_e = 0; //data->_wChill = 0;
+    current_obs.setWindChill(decode_wind_chill(receive_buffer));
+    cout << "Current WIND CHILL is " << current_obs.getWindChill() << endl;
 
-    // Part 2: Data Adquisition
-    float temp_wChill = 0.0;
-	if (((receive_buffer[24] & 0x40) != 0x40))
-		cout << "data->_wChill = " << -2 << endl;
-	if (data_e == 0) {
-        temp_wChill = (bcd2int(receive_buffer[23]) / 10.0) + (bcd2int(receive_buffer[24] & 0x0F) * 10.0);
-		if ((receive_buffer[24] & 0x20) == 0x20)
-			temp_wChill += 0.05;
-		if ((receive_buffer[24] & 0x80) != 0x80)
-			temp_wChill *= -1;
+    //decode windgust
+    current_obs.setWindGust(decode_wind_gust(receive_buffer));
+    cout << "Current WIND GUST is " << current_obs.getWindGust() << endl;
 
-        cout << "data->wChill = " << temp_wChill << endl;
-	}
-	else
-		cout << "data->wChill = " << 0 << endl;
+    //decode windspeed
+    current_obs.setWindSpeed(decode_wind_speed(receive_buffer));
+    cout << "Current WIND SPEED is " << current_obs.getWindSpeed() << endl;
+
+    //decode winddir
+    current_obs.setWindDir(decode_wind_dir(receive_buffer));
+    cout << "Current WIND DIR is " << current_obs.getWindDir() << endl;
+
+    current_obs.calculateDewPoint();
+    cout << "Calculated DEW POINT is " << current_obs.getDewPoint() << endl;
+
+    current_obs.calculateRealFeel();
+    cout << "Calculated RealFeel© is " << current_obs.getRealFeel() << endl;
+
     cout << "End of the program" << endl;
     return 0;
 }
