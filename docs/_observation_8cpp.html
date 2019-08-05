@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Weather Station v3: main.h Source File</title>
+<title>Weather Station v3: Observation.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,7 +68,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('main_8h_source.html','');});
+$(document).ready(function(){initNavTree('_observation_8cpp.html','');});
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -88,18 +88,30 @@ $(document).ready(function(){initNavTree('main_8h_source.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">main.h</div>  </div>
+<div class="title">Observation.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="main_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;</div><div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;libusb-1.0/libusb.h&gt;</span></div><div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div><div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="main_8h.html#acd5f27bc0b9c7c2b9efe40ba0bab5461">   19</a></span>&#160;<span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="main_8h.html#acd5f27bc0b9c7c2b9efe40ba0bab5461">BUFLEN</a> = 35;</div><div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div><div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a3bffa26657f61f8155f2ebf41a1e434d">printdev</a>(libusb_device *dev);</div><div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keywordtype">short</span> <span class="keywordtype">int</span> <a class="code" href="main_8h.html#a15a306be596b033fc21141b52118537d">obtain_usb_data</a>(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* receive_buffer);</div><div class="ttc" id="main_8h_html_a3bffa26657f61f8155f2ebf41a1e434d"><div class="ttname"><a href="main_8h.html#a3bffa26657f61f8155f2ebf41a1e434d">printdev</a></div><div class="ttdeci">void printdev(libusb_device *dev)</div><div class="ttdoc">From a USB device, it shows its information.</div><div class="ttdef"><b>Definition:</b> main.cpp:110</div></div>
-<div class="ttc" id="main_8h_html_a15a306be596b033fc21141b52118537d"><div class="ttname"><a href="main_8h.html#a15a306be596b033fc21141b52118537d">obtain_usb_data</a></div><div class="ttdeci">short int obtain_usb_data(unsigned char *receive_buffer)</div><div class="ttdoc">Function to obtain the info from the USB device.</div><div class="ttdef"><b>Definition:</b> main.cpp:163</div></div>
-<div class="ttc" id="main_8h_html_acd5f27bc0b9c7c2b9efe40ba0bab5461"><div class="ttname"><a href="main_8h.html#acd5f27bc0b9c7c2b9efe40ba0bab5461">BUFLEN</a></div><div class="ttdeci">const int BUFLEN</div><div class="ttdoc">Size of the data buffer where USB data is stored.</div><div class="ttdef"><b>Definition:</b> main.h:19</div></div>
-</div><!-- fragment --></div><!-- contents -->
+
+<p><a class="el" href="class_observation.html" title="Observation Class.">Observation</a> Class.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="_observation_8h_source.html">Observation.h</a>&quot;</code><br />
+<code>#include &lt;ctime&gt;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;list&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+</div><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="class_observation.html" title="Observation Class.">Observation</a> Class. </p>
+<dl class="section author"><dt>Author</dt><dd>Josep Dols (<a href="#" onclick="location.href='mai'+'lto:'+'jod'+'ol'+'dar'+'@g'+'mai'+'l.'+'com'; return false;">jodol<span style="display: none;">.nosp@m.</span>dar@<span style="display: none;">.nosp@m.</span>gmail<span style="display: none;">.nosp@m.</span>.com</a>) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.0.0 </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2018-10-06</dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2019</dd></dl>
+<p>The observation object is intended to store all the information related to a specific measurement made by the Hideki physical device. This is the basic object in the application. </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="main_8h.html">main.h</a></li>
+    <li class="navelem"><a class="el" href="_observation_8cpp.html">Observation.cpp</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.15 </li>
