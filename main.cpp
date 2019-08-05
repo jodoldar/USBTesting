@@ -1,3 +1,24 @@
+/**
+ * @file main.cpp
+ * @author Josep Dols (jodoldar@gmail.com)
+ * @brief Main file of the Weather Station v3 project
+ * @version 1.0.1
+ * @date 2019-08-05
+ * 
+ * @copyright Copyright (c) 2019
+ * 
+ * Central file of the Weather Station v3 project. From the main() function,
+ * the data retrieval process is called. After that, a new Observation object
+ * is created and filled with all the information available.
+ * 
+ * TODO:
+ *  - Daemonize the execution in order to keep the program executed while the
+ *      Raspberry Pi is on.
+ *  - Integrate the WeatherUndergroun API call from the previous Weather Station
+ *      v2 project.
+ *  - Implement the DB call in order to save the retrieved data.
+ */
+
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -10,21 +31,29 @@
 
 using namespace std;
 
+/**
+ * @brief Main function from where the different calls to the modules are done
+ * and coordinated to obtain the data, process it, and send it to the outside.
+ * 
+ * @return int Result of the program execution
+ */
 int main() {
-    
+    /* Variables declaration */
     unsigned char receive_buffer[BUFLEN];
     Observation current_obs;
     int aux_counter = 0;
 
+    /* Variables initialization */
     current_obs = Observation();
 
+    /* Obtain the data from the USB device */
     obtain_usb_data((unsigned char*)&receive_buffer);
 
-    //decode pressure
+    /* Process & decode the pressure value */
     current_obs.setPressure(decode_pressure(receive_buffer));
     cout << "Current PRESSURE is " << current_obs.getPressure() << endl;
 
-    //decode temperature and humidity from all sensors
+    /* Process & decode the temperature values */
     aux_counter = 0;
 	for (auto it : decode_temperature(receive_buffer))
     {
@@ -32,6 +61,7 @@ int main() {
         cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
     }
 
+    /* Process & decode the humidity values */
     aux_counter = 0;
 	for (auto it : decode_humidity(receive_buffer))
     {
@@ -39,25 +69,27 @@ int main() {
         cout << "Current HUMIDITY " << aux_counter-1 << " is " << current_obs.getHumidity(aux_counter-1) << endl;
     }
 
-    //decode windchill
+    /* Process & decode the wind chill value */
     current_obs.setWindChill(decode_wind_chill(receive_buffer));
     cout << "Current WIND CHILL is " << current_obs.getWindChill() << endl;
 
-    //decode windgust
+    /* Process & decode the wind gust value */
     current_obs.setWindGust(decode_wind_gust(receive_buffer));
     cout << "Current WIND GUST is " << current_obs.getWindGust() << endl;
 
-    //decode windspeed
+    /* Process & decode the wind speed value */
     current_obs.setWindSpeed(decode_wind_speed(receive_buffer));
     cout << "Current WIND SPEED is " << current_obs.getWindSpeed() << endl;
 
-    //decode winddir
+    /* Process & decode the wind direction value */
     current_obs.setWindDir(decode_wind_dir(receive_buffer));
     cout << "Current WIND DIR is " << current_obs.getWindDir() << endl;
 
+    /* Calculate the dew point from the current observation */
     current_obs.calculateDewPoint();
     cout << "Calculated DEW POINT is " << current_obs.getDewPoint() << endl;
 
+    /* Calculate the RealFeel© from the current observation */
     current_obs.calculateRealFeel();
     cout << "Calculated RealFeel© is " << current_obs.getRealFeel() << endl;
 
@@ -65,6 +97,16 @@ int main() {
     return 0;
 }
 
+/**
+ * @brief From a USB device, it shows its information
+ * 
+ * Given a USB device, this function obtains all the available info from
+ * it, and shows it via the standard console output. Apart from that, it
+ * iterates over all the available interfaces of the device, showing also
+ * their information in the console.
+ * 
+ * @param dev Device from where to obtain the information
+ */
 void printdev (libusb_device *dev) {
     libusb_device_descriptor usbDes;
 
@@ -108,7 +150,16 @@ void printdev (libusb_device *dev) {
     libusb_free_config_descriptor(config);
 }
 
-
+/**
+ * @brief Function to obtain the info from the USB device
+ * 
+ * Through this function, via the libusb, a dump signal is sent to the specified
+ * USB device. After that, the USB device returns a message with the information
+ * related to the Weather Station, coded into an array of unsigned chars.
+ * 
+ * @param receive_buffer Buffer where the retreived information is stored. 
+ * @return short int Result of the execution of the function.
+ */
 short int obtain_usb_data(unsigned char* receive_buffer)
 {
     libusb_device **devs;
