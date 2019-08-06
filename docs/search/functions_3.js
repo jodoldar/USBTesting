@@ -1,5 +1,14 @@
 var searchData=
 [
-  ['observation',['Observation',['../class_observation.html#a5c0c06219dc84651ad46d01a0a555270',1,'Observation::Observation()'],['../class_observation.html#a25eee80a01023422a1bf0121d9684120',1,'Observation::Observation(unsigned int newTimestamp)']]],
-  ['obtain_5fusb_5fdata',['obtain_usb_data',['../main_8cpp.html#a15a306be596b033fc21141b52118537d',1,'obtain_usb_data(unsigned char *receive_buffer):&#160;main.cpp'],['../main_8h.html#a15a306be596b033fc21141b52118537d',1,'obtain_usb_data(unsigned char *receive_buffer):&#160;main.cpp']]]
+  ['getdewpoint',['getDewPoint',['../class_observation.html#af71c509cddd8a527ea1a2d1ff56a4339',1,'Observation']]],
+  ['gethumidity',['getHumidity',['../class_observation.html#a3e88da6277e782901f1541f6ab7861e7',1,'Observation']]],
+  ['getpressure',['getPressure',['../class_observation.html#aa589fe7a353f35113e63f2fe83f82413',1,'Observation']]],
+  ['getrainfall',['getRainfall',['../class_observation.html#a809a70b901280ca0ccc96fbd83e18912',1,'Observation']]],
+  ['getrealfeel',['getRealFeel',['../class_observation.html#ad530d26077e3a47f8aeea141ee4616ad',1,'Observation']]],
+  ['gettemperature',['getTemperature',['../class_observation.html#a696611415d9e570e3051c1ceaf46b4a0',1,'Observation']]],
+  ['gettimestamp',['getTimestamp',['../class_observation.html#ad19a27afea3447bf4b97fd8627771e36',1,'Observation']]],
+  ['getwindchill',['getWindChill',['../class_observation.html#a00b487a75cef3326f939572ceea8b563',1,'Observation']]],
+  ['getwinddir',['getWindDir',['../class_observation.html#a72bf5f48018bfd3311f9c6731b99d03c',1,'Observation']]],
+  ['getwindgust',['getWindGust',['../class_observation.html#aba93714d005bb990029db333b274e256',1,'Observation']]],
+  ['getwindspeed',['getWindSpeed',['../class_observation.html#af4f8eeac392f4dd22c5cd8035cc8cd4d',1,'Observation']]]
 ];

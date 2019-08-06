@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['calculatedewpoint',['calculateDewPoint',['../class_observation.html#a61182d58cdfdd1dce419d1f076057d31',1,'Observation']]],
-  ['calculaterealfeel',['calculateRealFeel',['../class_observation.html#a6a785996da1c1bba11e562d57210bb8c',1,'Observation']]]
+  ['bcd2int',['bcd2int',['../data__decoder_8cpp.html#ab506f66c0b860fb4d0fdd282932b02ed',1,'bcd2int(char bcd):&#160;data_decoder.cpp'],['../data__decoder_8h.html#ab506f66c0b860fb4d0fdd282932b02ed',1,'bcd2int(char bcd):&#160;data_decoder.cpp']]]
 ];
