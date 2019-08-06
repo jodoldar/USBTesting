@@ -1,3 +1,16 @@
+/**
+ * @file data_decoder.cpp
+ * @author Josep Dols (jodoldar@gmail.com)
+ * @brief Library to decode the information from the USB
+ * @version 1.0.0
+ * @date 2019-08-06
+ * 
+ * @copyright Copyright (c) 2019
+ * 
+ * Library with the necessary functions to decode the information retreived
+ * from the USB device into a readable and usable format.
+ */
+
 #include "data_decoder.h"
 
 #include <cstring>
@@ -6,6 +19,12 @@
 
 using namespace std;
 
+/**
+ * @brief Function to decode the pressure value obtained
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return float Pressure value decoded
+ */
 float decode_pressure (unsigned char* raw_data)
 {
     float f_press;
@@ -25,6 +44,12 @@ float decode_pressure (unsigned char* raw_data)
     }
 }
 
+/**
+ * @brief Function to decode the different temperature values obtained
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return std::list<float> List with the temperature values
+ */
 std::list<float> decode_temperature (unsigned char* raw_data)
 {
     std::list<float> lcl_temps(0);
@@ -73,6 +98,12 @@ std::list<float> decode_temperature (unsigned char* raw_data)
     return lcl_temps;
 }
 
+/**
+ * @brief Function to decode the different humidity values obtained
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return std::list<float> List with the humidity values
+ */
 std::list<float> decode_humidity (unsigned char* raw_data)
 {
     std::list<float> lcl_hums(0);
@@ -117,6 +148,12 @@ std::list<float> decode_humidity (unsigned char* raw_data)
     return lcl_hums;
 }
 
+/**
+ * @brief Function to decode the wind chill value
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return float Temperature value decoded
+ */
 float decode_wind_chill (unsigned char* raw_data)
 {
     float f_wind_chill = 0.0;
@@ -148,6 +185,12 @@ float decode_wind_chill (unsigned char* raw_data)
     return f_wind_chill;
 }
 
+/**
+ * @brief Function to decode the wind gust value
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return float Wind value decoded
+ */
 float decode_wind_gust (unsigned char* raw_data)
 {
     float f_wind_gust = 0.0;
@@ -176,6 +219,12 @@ float decode_wind_gust (unsigned char* raw_data)
     return f_wind_gust * 3.6;
 }
 
+/**
+ * @brief Function to decode the wind speed value
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return float Wind value decoded
+ */
 float decode_wind_speed (unsigned char* raw_data)
 {
     float f_wind_speed = 0.0;
@@ -204,6 +253,12 @@ float decode_wind_speed (unsigned char* raw_data)
     return f_wind_speed * 3.6;
 }
 
+/**
+ * @brief Function to decode the wind direction value
+ * 
+ * @param raw_data Raw buffer obtained from the USB device
+ * @return float Direction value decoded
+ */
 float decode_wind_dir (unsigned char* raw_data)
 {
     float f_wind_dir = 0;
@@ -245,6 +300,15 @@ float decode_wind_dir (unsigned char* raw_data)
     return f_wind_dir;
 }
 
+/**
+ * @brief Function to transform a sigle character from BCD to Integer
+ * 
+ * This function transforms a single character coded in BCD into a integer
+ * applying a fixed transformation.
+ * 
+ * @param bcd Character to transform
+ * @return int Integer representation of the character
+ */
 int bcd2int(char bcd) {
 	return ((int)((bcd & 0xF0) >> 4) * 10 + (int)(bcd & 0x0F));
 }
