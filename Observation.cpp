@@ -304,9 +304,10 @@ short int Observation::calculateDewPoint()
  * 
  * TODO: Introduce an external UV value to the formulae.
  * 
+ * @param uv_index UV index externally calculated
  * @return short int 
  */
-short int Observation::calculateRealFeel()
+short int Observation::calculateRealFeel(int uv_index)
 {
     float temp1_f;
     float wind_speed_mph;
@@ -347,7 +348,7 @@ short int Observation::calculateRealFeel()
         WSP2 = (80 - temp1_f) * (0.566 + 0.25*sqrt(w_a) - 0.0166 * w_a) * (sqrt(pressure/10)/10);
 
         // Step 220. Calculation of SI2
-        SI2 = 2;
+        SI2 = uv_index;
 
         // Step 230. Calculation of H2
         float d_a;
@@ -376,7 +377,7 @@ short int Observation::calculateRealFeel()
         WSP1 = sqrt(wind_speed_mph) * (sqrt(pressure/10)/10);
 
         // Step 225. Calculation of SI1
-        SI1 = 2;
+        SI1 = uv_index;
 
         // Step 235. Calculation of H1
         float d_a;

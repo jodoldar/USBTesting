@@ -90,5 +90,5 @@ class Observation
         void setRealFeel(float newRealFeel);
 
         short int calculateDewPoint();
-        short int calculateRealFeel();
+        short int calculateRealFeel(int uv_index);
 };

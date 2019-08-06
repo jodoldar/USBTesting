@@ -27,6 +27,7 @@
 
 #include "data_decoder.h"
 #include "main.h"
+#include "network_utils.hpp"
 #include "Observation.h"
 
 using namespace std;
@@ -42,56 +43,79 @@ int main() {
     unsigned char receive_buffer[BUFLEN];
     Observation current_obs;
     int aux_counter = 0;
+    int iterCounter = 0;
+    short int retValue = 0;
+    bool keepRecording = true;
+    int uv_index = 0;
 
-    /* Variables initialization */
-    current_obs = Observation();
-
-    /* Obtain the data from the USB device */
-    obtain_usb_data((unsigned char*)&receive_buffer);
-
-    /* Process & decode the pressure value */
-    current_obs.setPressure(decode_pressure(receive_buffer));
-    cout << "Current PRESSURE is " << current_obs.getPressure() << endl;
-
-    /* Process & decode the temperature values */
-    aux_counter = 0;
-	for (auto it : decode_temperature(receive_buffer))
+    while (keepRecording)
     {
-        current_obs.setTemperature(it, aux_counter++);
-        cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
+        if ((iterCounter % 120) == 0)
+        {
+            /* Call to the UV API to get current value */
+            uv_index = obtain_current_uv_index();
+            if (uv_index < 0)
+                uv_index = 0;
+        }
+        /* Variables initialization */
+        current_obs = Observation();
+
+        /* Obtain the data from the USB device */
+        retValue = obtain_usb_data((unsigned char*)&receive_buffer);
+        if (retValue < 0)
+        {
+            this_thread::sleep_for(chrono::seconds(30));
+            iterCounter++;
+            continue;
+        }
+
+        /* Process & decode the pressure value */
+        current_obs.setPressure(decode_pressure(receive_buffer));
+        cout << "Current PRESSURE is " << current_obs.getPressure() << endl;
+
+        /* Process & decode the temperature values */
+        aux_counter = 0;
+        for (auto it : decode_temperature(receive_buffer))
+        {
+            current_obs.setTemperature(it, aux_counter++);
+            cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
+        }
+
+        /* Process & decode the humidity values */
+        aux_counter = 0;
+        for (auto it : decode_humidity(receive_buffer))
+        {
+            current_obs.setHumidity(it, aux_counter++);
+            cout << "Current HUMIDITY " << aux_counter-1 << " is " << current_obs.getHumidity(aux_counter-1) << endl;
+        }
+
+        /* Process & decode the wind chill value */
+        current_obs.setWindChill(decode_wind_chill(receive_buffer));
+        cout << "Current WIND CHILL is " << current_obs.getWindChill() << endl;
+
+        /* Process & decode the wind gust value */
+        current_obs.setWindGust(decode_wind_gust(receive_buffer));
+        cout << "Current WIND GUST is " << current_obs.getWindGust() << endl;
+
+        /* Process & decode the wind speed value */
+        current_obs.setWindSpeed(decode_wind_speed(receive_buffer));
+        cout << "Current WIND SPEED is " << current_obs.getWindSpeed() << endl;
+
+        /* Process & decode the wind direction value */
+        current_obs.setWindDir(decode_wind_dir(receive_buffer));
+        cout << "Current WIND DIR is " << current_obs.getWindDir() << endl;
+
+        /* Calculate the dew point from the current observation */
+        current_obs.calculateDewPoint();
+        cout << "Calculated DEW POINT is " << current_obs.getDewPoint() << endl;
+
+        /* Calculate the RealFeel© from the current observation */
+        current_obs.calculateRealFeel(uv_index);
+        cout << "Calculated RealFeel© is " << current_obs.getRealFeel() << endl;
+
+        this_thread::sleep_for(chrono::seconds(30));
+        iterCounter++;
     }
-
-    /* Process & decode the humidity values */
-    aux_counter = 0;
-	for (auto it : decode_humidity(receive_buffer))
-    {
-        current_obs.setHumidity(it, aux_counter++);
-        cout << "Current HUMIDITY " << aux_counter-1 << " is " << current_obs.getHumidity(aux_counter-1) << endl;
-    }
-
-    /* Process & decode the wind chill value */
-    current_obs.setWindChill(decode_wind_chill(receive_buffer));
-    cout << "Current WIND CHILL is " << current_obs.getWindChill() << endl;
-
-    /* Process & decode the wind gust value */
-    current_obs.setWindGust(decode_wind_gust(receive_buffer));
-    cout << "Current WIND GUST is " << current_obs.getWindGust() << endl;
-
-    /* Process & decode the wind speed value */
-    current_obs.setWindSpeed(decode_wind_speed(receive_buffer));
-    cout << "Current WIND SPEED is " << current_obs.getWindSpeed() << endl;
-
-    /* Process & decode the wind direction value */
-    current_obs.setWindDir(decode_wind_dir(receive_buffer));
-    cout << "Current WIND DIR is " << current_obs.getWindDir() << endl;
-
-    /* Calculate the dew point from the current observation */
-    current_obs.calculateDewPoint();
-    cout << "Calculated DEW POINT is " << current_obs.getDewPoint() << endl;
-
-    /* Calculate the RealFeel© from the current observation */
-    current_obs.calculateRealFeel();
-    cout << "Calculated RealFeel© is " << current_obs.getRealFeel() << endl;
 
     cout << "End of the program" << endl;
     return 0;
@@ -176,6 +200,7 @@ short int obtain_usb_data(unsigned char* receive_buffer)
     int total_transferred = 0;
     unsigned char crc;
     bool finish = false;
+    int transfer_attempts;
 
     retValue = libusb_init(&ctx);
     if (retValue < 0) {
@@ -237,71 +262,78 @@ short int obtain_usb_data(unsigned char* receive_buffer)
         cerr << "Alternative setting not configured: " << libusb_strerror(libusb_error(retValue)) << endl;
     }
 
+    transfer_attempts = 0;
+
     do {
 
-    // Control transferece
-    control_data[4] = control_addr / 0x10000;
-    control_data[3] = ( control_addr - ( control_data[4] * 0x10000 ) ) / 0x100;
-    control_data[2] = control_addr - ( control_data[4] * 0x10000 ) - ( control_data[3] * 0x100 );
-    control_data[5] = ( control_data[1] ^ control_data[2] ^ control_data[3] ^ control_data[4] );
+        // Control transferece
+        control_data[4] = control_addr / 0x10000;
+        control_data[3] = ( control_addr - ( control_data[4] * 0x10000 ) ) / 0x100;
+        control_data[2] = control_addr - ( control_data[4] * 0x10000 ) - ( control_data[3] * 0x100 );
+        control_data[5] = ( control_data[1] ^ control_data[2] ^ control_data[3] ^ control_data[4] );
 
-    retValue = libusb_control_transfer(dev_handle, 0x21 & 0xff, 0x09 & 0xff, 0x0200 & 0xffff, 0x0000 & 0xffff, control_data, 0x08 & 0xffff, 50);
-    if (retValue < 0) {
-        cerr << "Error sending request: " << libusb_strerror(libusb_error(retValue)) << endl;
-    } else {
-        std::this_thread::sleep_for(std::chrono::milliseconds(300)); // Wait for 30 ms
+        retValue = libusb_control_transfer(dev_handle, 0x21 & 0xff, 0x09 & 0xff, 0x0200 & 0xffff, 0x0000 & 0xffff, control_data, 0x08 & 0xffff, 50);
+        if (retValue < 0) {
+            cerr << "Error sending request: " << libusb_strerror(libusb_error(retValue)) << endl;
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(300)); // Wait for 30 ms
+            #ifdef DEBUG 
+                cout << "Message sent" << endl;
+            #endif
+        }
+
+        // Receive transference
+        retValue = libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
+        if (retValue < 0) {
+            //return -4;
+            cerr << "Error in the receive transfer." << endl;
+        }
+        while ( transferred_len > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(15)); // Wait for 0.15s
+            bytes_transferred = (int)(control_data[0]);
+            #ifdef DEBUG 
+            cout << "Control data 0: " << hex << (int)(control_data[0]) << dec << endl;
+            cout << "Data transferred: " << transferred_len << endl;
+            #endif
+            if (( total_transferred + bytes_transferred ) < BUFLEN )
+                memcpy (receive_buffer + total_transferred, control_data + 1, bytes_transferred);
+            total_transferred += bytes_transferred;
+            libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
+        }
         #ifdef DEBUG 
-            cout << "Message sent" << endl;
+        cout << "Message received" << endl;
+
+        for (int i = 0; i < BUFLEN; i++) {
+            cout << "Char [" << i << "]: ";
+            cout << hex << static_cast<int>(receive_buffer[i]) << dec << endl;
+        }
         #endif
-    }
+        // CRC Calculation
+        crc = 0x00;
+        for (int i = 0; i <= 32; i++ ) {
+            crc = crc ^ receive_buffer[i];
+        }
 
-    // Receive transference
-    retValue = libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
-    if (retValue < 0) {
-        //return -4;
-        cerr << "Error in the receive transfer." << endl;
-    }
-    while ( transferred_len > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(15)); // Wait for 0.15s
-        bytes_transferred = (int)(control_data[0]);
-        #ifdef DEBUG 
-        cout << "Control data 0: " << hex << (int)(control_data[0]) << dec << endl;
-        cout << "Data transferred: " << transferred_len << endl;
+        if (crc == receive_buffer[33]){
+            finish = true;
+        } 
+        if (crc == 0x5a) {
+            finish = true;
+        }
+
+        #ifdef DEBUG
+        cout << "CRC: " << hex << (int)crc << dec << endl;
+        cout << "Rbuf[33]: " << hex << (int)receive_buffer[33] << dec << endl;
+        cout << "Rbuf[0]: " << hex << (int)receive_buffer[0] << dec << endl;
         #endif
-        if (( total_transferred + bytes_transferred ) < BUFLEN )
-            memcpy (receive_buffer + total_transferred, control_data + 1, bytes_transferred);
-        total_transferred += bytes_transferred;
-        libusb_interrupt_transfer(dev_handle, 0x81 & 0xff, control_data, 0x8, &transferred_len, 50);
-    }
-    #ifdef DEBUG 
-    cout << "Message received" << endl;
 
-    for (int i = 0; i < BUFLEN; i++) {
-        cout << "Char [" << i << "]: ";
-        cout << hex << static_cast<int>(receive_buffer[i]) << dec << endl;
-    }
-    #endif
-    // CRC Calculation
-    crc = 0x00;
-    for (int i = 0; i <= 32; i++ ) {
-        crc = crc ^ receive_buffer[i];
-    }
+        transfer_attempts++;
 
-    if (crc == receive_buffer[33]){
-        finish = true;
-    } 
-    if (crc == 0x5a) {
-        finish = true;
-    }
-
-    #ifdef DEBUG
-    cout << "CRC: " << hex << (int)crc << dec << endl;
-    cout << "Rbuf[33]: " << hex << (int)receive_buffer[33] << dec << endl;
-    cout << "Rbuf[0]: " << hex << (int)receive_buffer[0] << dec << endl;
-    #endif
-
-    } while (finish == false);
+    } while (finish == false && transfer_attempts < 10);
 
     libusb_close(dev_handle);
     libusb_exit(ctx);
+
+    if (transfer_attempts == 10)
+        return -1;
 }
