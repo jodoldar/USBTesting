@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Weather Station v3: Observation.cpp File Reference</title>
+<title>Weather Station v3: network_utils.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,7 +68,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('_observation_8cpp.html','');});
+$(document).ready(function(){initNavTree('network__utils_8cpp.html','');});
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -87,31 +87,72 @@ $(document).ready(function(){initNavTree('_observation_8cpp.html','');});
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">Observation.cpp File Reference</div>  </div>
+<div class="title">network_utils.cpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="class_observation.html" title="Observation Class.">Observation</a> Class.  
+<p>Group of utilities related to network usage.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="_observation_8h_source.html">Observation.h</a>&quot;</code><br />
-<code>#include &lt;ctime&gt;</code><br />
+<div class="textblock"><code>#include &lt;curl/curl.h&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
-<code>#include &lt;list&gt;</code><br />
-<code>#include &lt;math.h&gt;</code><br />
-</div><a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="class_observation.html" title="Observation Class.">Observation</a> Class. </p>
+<code>#include &quot;json.hpp&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ab701e3ac61a85b337ec5c1abaad6742d"><td class="memItemLeft" align="right" valign="top"><a id="ab701e3ac61a85b337ec5c1abaad6742d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>json</b> = nlohmann::json</td></tr>
+<tr class="separator:ab701e3ac61a85b337ec5c1abaad6742d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:aac58c1ff9a7ef0a352fecded555adc92"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="network__utils_8cpp.html#aac58c1ff9a7ef0a352fecded555adc92">obtain_current_uv_index</a> ()</td></tr>
+<tr class="memdesc:aac58c1ff9a7ef0a352fecded555adc92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to obtain the current UV index.  <a href="#aac58c1ff9a7ef0a352fecded555adc92">More...</a><br /></td></tr>
+<tr class="separator:aac58c1ff9a7ef0a352fecded555adc92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Group of utilities related to network usage. </p>
 <dl class="section author"><dt>Author</dt><dd>Josep Dols (<a href="#" onclick="location.href='mai'+'lto:'+'jod'+'ol'+'dar'+'@g'+'mai'+'l.'+'com'; return false;">jodol<span style="display: none;">.nosp@m.</span>dar@<span style="display: none;">.nosp@m.</span>gmail<span style="display: none;">.nosp@m.</span>.com</a>) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>1.0.0 </dd></dl>
-<dl class="section date"><dt>Date</dt><dd>2018-10-06</dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.1.0 </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019-08-06</dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2019</dd></dl>
-<p>The observation object is intended to store all the information related to a specific measurement made by the Hideki physical device. This is the basic object in the application. </p>
-</div></div><!-- contents -->
+<p>Group of functions to be used related to those functions which require some interaction with external APIs through the Internet.</p>
+<p>For now, the expected usage is:</p><ul>
+<li>Obtain the current UV index given a position.</li>
+<li>Send the observation data to the Weather Underground API </li>
+</ul>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="aac58c1ff9a7ef0a352fecded555adc92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac58c1ff9a7ef0a352fecded555adc92">&#9670;&nbsp;</a></span>obtain_current_uv_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int obtain_current_uv_index </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to obtain the current UV index. </p>
+<p>Using the cURL utilities via libcurl4, it makes a GET API request to retrieve the lastest information available given a position. With that information, it also comes some info about the sun position, and sunrise or sunset, all of that in JSON format.</p>
+<p>The API used is available at <a href="https://www.openuv.io/uvindex">https://www.openuv.io/uvindex</a></p>
+<dl class="section return"><dt>Returns</dt><dd>int Current UV index retrieved </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="_observation_8cpp.html">Observation.cpp</a></li>
+    <li class="navelem"><a class="el" href="network__utils_8cpp.html">network_utils.cpp</a></li>
     <li class="footer">Generated by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.15 </li>

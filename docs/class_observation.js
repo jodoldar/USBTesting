@@ -3,7 +3,7 @@ var class_observation =
     [ "Observation", "class_observation.html#a5c0c06219dc84651ad46d01a0a555270", null ],
     [ "Observation", "class_observation.html#a25eee80a01023422a1bf0121d9684120", null ],
     [ "calculateDewPoint", "class_observation.html#a61182d58cdfdd1dce419d1f076057d31", null ],
-    [ "calculateRealFeel", "class_observation.html#a6a785996da1c1bba11e562d57210bb8c", null ],
+    [ "calculateRealFeel", "class_observation.html#a0b319aeca1973807ea6fbcf2c53eaff7", null ],
     [ "getDewPoint", "class_observation.html#af71c509cddd8a527ea1a2d1ff56a4339", null ],
     [ "getHumidity", "class_observation.html#a3e88da6277e782901f1541f6ab7861e7", null ],
     [ "getPressure", "class_observation.html#aa589fe7a353f35113e63f2fe83f82413", null ],
