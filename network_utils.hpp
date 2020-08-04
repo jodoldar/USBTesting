@@ -15,5 +15,8 @@
  *  - Send the observation data to the Weather Underground API
  */
 
+#include "Observation.h"
+
 /* Functions definition */
 int obtain_current_uv_index();
+int write_into_DB(Observation obs);
