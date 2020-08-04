@@ -28,7 +28,7 @@
 #include "data_decoder.h"
 #include "main.h"
 #include "network_utils.hpp"
-#include "Observation.h"
+//#include "Observation.h"
 
 using namespace std;
 
@@ -47,6 +47,7 @@ int main() {
     short int retValue = 0;
     bool keepRecording = true;
     int uv_index = 0;
+    bool temp_warn = false;
 
     while (keepRecording)
     {
@@ -59,6 +60,7 @@ int main() {
         }
         /* Variables initialization */
         current_obs = Observation();
+        temp_warn = false;
 
         /* Obtain the data from the USB device */
         retValue = obtain_usb_data((unsigned char*)&receive_buffer);
@@ -72,6 +74,13 @@ int main() {
         /* Process & decode the pressure value */
         current_obs.setPressure(decode_pressure(receive_buffer));
         cout << "Current PRESSURE is " << current_obs.getPressure() << endl;
+        if (current_obs.getPressure() < 900 || current_obs.getPressure() > 1100)
+        {
+            cerr << "Aborting parsing, invalid values" << endl;
+            this_thread::sleep_for(chrono::seconds(30));
+            iterCounter++;
+            continue;
+        }
 
         /* Process & decode the temperature values */
         aux_counter = 0;
@@ -80,6 +89,10 @@ int main() {
             current_obs.setTemperature(it, aux_counter++);
             cout << "Current TEMPERATURE " << aux_counter-1 << " is " << current_obs.getTemperature(aux_counter-1) << endl;
         }
+        if (current_obs.getTemperature(1) == 0.0)
+        {
+            temp_warn = true;
+        }
 
         /* Process & decode the humidity values */
         aux_counter = 0;
@@ -87,6 +100,13 @@ int main() {
         {
             current_obs.setHumidity(it, aux_counter++);
             cout << "Current HUMIDITY " << aux_counter-1 << " is " << current_obs.getHumidity(aux_counter-1) << endl;
+        }
+        if (temp_warn &&current_obs.getHumidity(1) == 0)
+        {
+            cerr << "Aborting parsing, strange values" << endl;
+            this_thread::sleep_for(chrono::seconds(30));
+            iterCounter++;
+            continue;
         }
 
         /* Process & decode the wind chill value */
@@ -112,6 +132,16 @@ int main() {
         /* Calculate the RealFeel© from the current observation */
         current_obs.calculateRealFeel(uv_index);
         cout << "Calculated RealFeel© is " << current_obs.getRealFeel() << endl;
+        if (current_obs.getRealFeel() > 70)
+        {
+            cerr << "Aborting parsing, strange values" << endl;
+            this_thread::sleep_for(chrono::seconds(30));
+            iterCounter++;
+            continue;
+        }
+
+        /* Write into the DB */
+        write_into_DB(current_obs);
 
         this_thread::sleep_for(chrono::seconds(30));
         iterCounter++;

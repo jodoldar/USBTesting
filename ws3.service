@@ -1,0 +1,15 @@
+[Unit]
+Description=Weather Station 3 service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+RuntimeMaxSec=28800
+User=root
+ExecStart=/home/pi/Documents/USBTesting/WS3
+
+[Install]
+WantedBy=multi-user.target
